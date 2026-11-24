@@ -1,6 +1,5 @@
 import numpy as np
 from pathlib import Path
-import py3Dmol
 
 
 def coords_to_xyz(atoms, coords, title=""):

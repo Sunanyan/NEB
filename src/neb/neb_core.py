@@ -1,15 +1,25 @@
 import numpy as np
+from .tangent import *
 
-def linear(start, end, n, dtype = np.float32):
+
+
+def linear(start, end, n):
     """Return n images including the two endpoints."""
-    start = np.asarray(start, dtype=dtype)
-    end   = np.asarray(end, dtype=dtype)
+    start = np.asarray(start)
+    end   = np.asarray(end)
     t = np.linspace(0, 1, n)
     t = t.reshape((n,) + (1,) * start.ndim)
     return (1 - t) * start + t * end
 
 
-def neb_force(images, grad, energy=None, k=2., climb=False, dtype=np.float32):
+
+def neb_force(images,
+              grad,
+              energy=None,
+              k=2.0,
+              climb=False,
+              tangent="improved"
+        ):
     """NEB forces, using an energy-weighted tangent and optional climbing image.
 
     images/grad: (number of images, ...) array.
@@ -17,48 +27,33 @@ def neb_force(images, grad, energy=None, k=2., climb=False, dtype=np.float32):
     endpoints receive exactly zero NEB force.
     """
     shape = np.shape(images)
-    x = np.asarray(images, dtype=dtype)
-    g = np.asarray(grad, dtype=dtype)
-    e = None if energy is None else np.asarray(energy, dtype=dtype)
-    if climb and e is None:
-        raise ValueError("CI needs energies to select the highest image")
+    x = np.asarray(images)
+    g = np.asarray(grad)
+    e = None if energy is None else np.asarray(energy)
     
     x = x.reshape(len(x), -1)
     g = g.reshape(len(g), -1)
     f = np.zeros_like(x)
     ci = 1 + np.argmax(e[1:-1]) if climb else -1
 
+    if e is None:
+        if climb:
+            raise ValueError("Climbing image requires energy.")
+
+        if tangent in ("upwind", "improved"):
+            tangent = "central"
+
+    tangents = compute_tangents(x, e, method=tangent)
+
     for i in range(1, len(x) - 1):
-        a = x[i] - x[i - 1]  
-        b = x[i + 1] - x[i]  
-        if e is not None:
-            de_a = abs(e[i] - e[i - 1])
-            de_b = abs(e[i + 1] - e[i])
+        a = x[i] - x[i - 1]
+        b = x[i + 1] - x[i]
 
-        # Without energies use a geometric tangent; otherwise an improved tangent.
-        if e is None:
-            tau = a + b
-        elif e[i + 1] > e[i] > e[i - 1]:
-            tau = b.copy()
-        elif e[i + 1] < e[i] < e[i - 1]:
-            tau = a.copy()
-        elif e[i + 1] > e[i - 1]:
-            tau = b * max(de_a, de_b) + a * min(de_a, de_b)
-        elif e[i + 1] < e[i - 1]:
-            tau = b * min(de_a, de_b) + a * max(de_a, de_b)
-        else:
-            tau = a + b
-
-        norm = np.linalg.norm(tau)
-        if norm < 1e-14:
-            tau = a + b
-            norm = np.linalg.norm(tau)
-        if norm < 1e-14:
-            continue
-        tau /= norm
+        tau = tangents[i]
 
         true_force = -g[i]
         parallel = np.dot(true_force, tau) * tau
+
         if i == ci:
             f[i] = true_force - 2 * parallel
         else:
@@ -68,9 +63,10 @@ def neb_force(images, grad, energy=None, k=2., climb=False, dtype=np.float32):
     return f.reshape(shape)
 
 
+
 def update(images, grad, energy=None, step=0.02, k=2., climb=False, max_move=0.04, dtype=np.float32):
     """One NEB or CI-NEB iteration, return (updated images, maximum NEB force)."""
-    f = neb_force(images, grad, energy, k=k, climb=climb, dtype=dtype)
+    f = neb_force(images, grad, energy, k=k, climb=climb)
     n = len(images)
     f_flat = f.reshape(n, -1)
     fmax = np.linalg.norm(f_flat[1:-1], axis=1).max()
@@ -81,6 +77,7 @@ def update(images, grad, energy=None, step=0.02, k=2., climb=False, max_move=0.0
     result = np.asarray(images, dtype=dtype).copy()
     result[1:-1] += move.reshape(result.shape)[1:-1]
     return result, fmax
+
 
 
 def evaluate_band(

@@ -1,17 +1,13 @@
-"""ORCA HOMO/LUMO analysis along an existing NEB/CI band.
-
-Requires ORCA 6.1, py3Dmol, numpy, matplotlib, and existing orca.py/util.py.
-Only supports closed-shell, integer-occupied RKS/RHF calculations.
-"""
 from pathlib import Path
 import re
-
 import numpy as np
+from html import escape
 import matplotlib.pyplot as plt
+from IPython.display import HTML, display
 import py3Dmol
+from .util import *
+from .orca import *
 
-from util import coords_to_xyz
-from orca import run_orca
 
 EH_TO_EV = 27.211386245988
 
@@ -20,8 +16,6 @@ def parse_orbitals(output):
     """Read the last ORBITAL ENERGIES table (restricted closed shell)."""
     lines = Path(output).read_text(errors="replace").splitlines()
     headers = [i for i, line in enumerate(lines) if line.strip() == "ORBITAL ENERGIES"]
-    if not headers:
-        raise ValueError(f"Missing ORBITAL ENERGIES section: {output}")
     records = []
     started = False
     for line in lines[headers[-1] + 1:]:
@@ -163,9 +157,6 @@ def show_orbitals(images, atoms, data_dir, image_index=4, *,
         panel = (0, col)
         cube_path = folder / f"{name}.cube"
 
-        if not cube_path.exists():
-            raise FileNotFoundError(cube_path)
-
         cube_data = cube_path.read_text()
 
         view.addModel(xyz, "xyz", viewer=panel)
@@ -201,19 +192,6 @@ def show_orbitals(images, atoms, data_dir, image_index=4, *,
     view.show()
     return view
 
-
-
-
-
-
-from html import escape
-from pathlib import Path
-
-import numpy as np
-import py3Dmol
-from IPython.display import HTML, display
-
-from util import coords_to_xyz
 
 
 def show_all_orbitals(

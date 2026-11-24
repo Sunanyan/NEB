@@ -4,20 +4,26 @@ import time
 from pathlib import Path
 import numpy as np
 from tqdm.auto import tqdm
-from neb_core import *
+from .neb_core import *
 
 
-def checkpoint_write(stage, images, history, endpoint_e, data_dir, *,
-                     config=None, converged=False):
+def checkpoint_write(stage, 
+                     images, 
+                     history, 
+                     endpoint_e, 
+                     data_dir, 
+                     *,
+                     config=None, 
+                     converged=False):
     """Atomically save a full NEB state after each iteration."""
     folder = Path(data_dir) / stage
     folder.mkdir(parents=True, exist_ok=True)
     path = folder / "checkpoint.npz"
     temp = folder / "checkpoint.tmp.npz"
     payload = dict(
-        images=np.asarray(images, dtype=np.float64),
-        history=np.asarray(history, dtype=float).reshape(-1, 4),
-        endpoint_e=np.asarray(endpoint_e, dtype=float),
+        images=np.asarray(images),
+        history=np.asarray(history).reshape(-1, 4),
+        endpoint_e=np.asarray(endpoint_e),
         converged=np.array(bool(converged)),
     )
     if config is not None:

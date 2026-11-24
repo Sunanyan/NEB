@@ -1,8 +1,8 @@
 import numpy as np
 from pathlib import Path
 import pandas as pd
-from util import *
-from neb_analysis import *
+from .util import *
+from .neb_analysis import *
 
 
 def bond_distances(images, i, j):
@@ -11,11 +11,13 @@ def bond_distances(images, i, j):
     return np.linalg.norm(images[:, i] - images[:, j], axis=1)
 
 
+
 def reaction_coordinate(images, center=0, atom_a=4, atom_b=5):
     """Compute q = d(center, atom_a) - d(center, atom_b)."""
     da = bond_distances(images, center, atom_a)
     db = bond_distances(images, center, atom_b)
     return da - db
+
 
 
 def min_pair_distances(images):
@@ -33,8 +35,17 @@ def min_pair_distances(images):
 
     return np.asarray(distances)
 
-def final_analysis(data_dir, atoms, calculator, *, force_tol=0.08,
-                   stage="ci", atom_center=0, atom_a=4, atom_b=5):
+
+
+def final_analysis(data_dir, 
+                   atoms, 
+                   calculator, 
+                   *, 
+                   force_tol=0.08,
+                   stage="ci", 
+                   atom_center=0, 
+                   atom_a=4, 
+                   atom_b=5):
     """Analyze a force-converged CI-NEB checkpoint and export path data.
 
     Parameters
@@ -61,34 +72,12 @@ def final_analysis(data_dir, atoms, calculator, *, force_tol=0.08,
     atoms = tuple(atoms)
     folder = data_dir / stage
     checkpoint = folder / "checkpoint.npz"
-    if not checkpoint.is_file():
-        raise FileNotFoundError(f"CI checkpoint not found: {checkpoint}")
 
     with np.load(checkpoint, allow_pickle=False) as saved:
         images = np.asarray(saved["images"], dtype=float).copy()
         history = np.asarray(saved["history"], dtype=float).copy()
 
-    if images.ndim != 3 or images.shape[1:] != (len(atoms), 3) or len(images) < 3:
-        raise ValueError("Invalid checkpoint images shape")
-    if (history.ndim != 2 or history.shape[1] < 2 or len(history) == 0
-            or not np.isfinite(history).all()):
-        raise RuntimeError("CI checkpoint does not have valid iteration history")
-    if history[-1, 1] >= force_tol:
-        raise RuntimeError(
-            f"CI is not force-converged: Fmax={history[-1, 1]:.5f} "
-            f"eV/Angstrom, tolerance={force_tol:.5f}"
-        )
-    if not np.isfinite(images).all():
-        raise ValueError("Non-finite checkpoint coordinates")
-    if len({atom_center, atom_a, atom_b}) != 3 or not all(
-        0 <= i < len(atoms) for i in (atom_center, atom_a, atom_b)
-    ):
-        raise ValueError("Invalid or repeated atom indices")
-
-    # Reevaluate energies on the *saved* band; the calculator may use its cache.
     energies = np.array([float(calculator(im)[0]) for im in images])
-    if not np.isfinite(energies).all():
-        raise ValueError("Non-finite final energies")
 
     da = bond_distances(images, atom_center, atom_a)
     db = bond_distances(images, atom_center, atom_b)

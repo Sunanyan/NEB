@@ -2,7 +2,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import numpy as np
-from util import *
+from .util import *
 
 
 def check_orca(executable="orca"):

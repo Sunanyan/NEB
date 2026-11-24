@@ -3,7 +3,7 @@ from html import escape
 import numpy as np
 import py3Dmol
 from IPython.display import HTML, display
-from util import *
+from .util import *
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, PillowWriter
 from pathlib import Path
@@ -65,7 +65,7 @@ def show_images(atoms, images, titles=None, columns=4,
         )
 
         # Chlorine colors and equal radii
-        for serial, color in ((4, "green"), (5, "cyan")):
+        for serial, color in ((4, "lightgreen"), (5, "cyan")):
             if serial < len(atoms) and atoms[serial] == "Cl":
                 view.setStyle(
                     {"serial": serial},

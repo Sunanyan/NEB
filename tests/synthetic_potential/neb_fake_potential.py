@@ -1,11 +1,3 @@
-"""Run two-stage NEB / CI-NEB on six 2-D model potentials from the screenshot.
-
-Example:
-    python neb_demo.py --out results
-
-Requires numpy, matplotlib, pillow. Never uses ORCA or ASE.
-"""
-
 import argparse
 from pathlib import Path
 import numpy as np
@@ -13,8 +5,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
-
-from neb_core import linear, update
+from neb.neb_core import *
 
 # ---------------------- TEST POTENTIALS ----------------------
 

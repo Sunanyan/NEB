@@ -1,7 +1,7 @@
 """Small self-tests for coordinate shapes, gradient formulas, and CI behaviour."""
 import numpy as np
-from neb_core import linear, neb_force, update
-from neb_demo import potential
+from neb.neb_core import linear, neb_force, update
+from .neb_fake_potential import *
 
 # Linear interpolation: endpoints, interior, molecule coordinate shape.
 a = np.array([[0., 0., 0.], [0., 0., 1.]])
