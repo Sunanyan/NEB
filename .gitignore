@@ -1,0 +1,47 @@
+# ==========================
+# macOS
+# ==========================
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ==========================
+# Python
+# ==========================
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+
+# ==========================
+# Virtual Environments
+# ==========================
+.venv/
+venv/
+.env
+.env.local
+
+# ==========================
+# Jupyter
+# ==========================
+.ipynb_checkpoints/
+
+# ==========================
+# ORCA
+# ==========================
+orca_cache/
+*.gbw
+*.tmp
+*.densities
+*.densitiesinfo
+
+# ==========================
+# Temporary Files
+# ==========================
+*.bak
+*.swp
+*.swo

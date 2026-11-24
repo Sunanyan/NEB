@@ -1,0 +1,14 @@
+numpy
+scipy
+matplotlib
+numba
+tqdm
+py3Dmol
+pyyaml
+pillow
+ipywidgets
+
+[dev]
+pytest
+jupyter
+ipykernel

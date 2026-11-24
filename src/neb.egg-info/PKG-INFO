@@ -1,0 +1,18 @@
+Metadata-Version: 2.4
+Name: neb
+Version: 0.1.0
+Summary: NEB and CI-NEB framework for computational chemistry
+Requires-Python: >=3.10
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: matplotlib
+Requires-Dist: numba
+Requires-Dist: tqdm
+Requires-Dist: py3Dmol
+Requires-Dist: pyyaml
+Requires-Dist: pillow
+Requires-Dist: ipywidgets
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: jupyter; extra == "dev"
+Requires-Dist: ipykernel; extra == "dev"
