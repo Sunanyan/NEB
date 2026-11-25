@@ -3,16 +3,6 @@ from .tangent import *
 
 
 
-def linear(start, end, n):
-    """Return n images including the two endpoints."""
-    start = np.asarray(start)
-    end   = np.asarray(end)
-    t = np.linspace(0, 1, n)
-    t = t.reshape((n,) + (1,) * start.ndim)
-    return (1 - t) * start + t * end
-
-
-
 def neb_force(images,
               grad,
               energy=None,
